@@ -735,43 +735,43 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
     private void addHeldItem(AttributeMap map) {
         actions.add(event -> {
-        LivingEntity entityLiving = event.getEntityLiving();
-        
-        final List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(ACTION_HELDITEM),entityLiving.getHeldItemMainhand());
-        if (items.isEmpty()) {
-            return;
-        }
-        if (items.size() == 1) {
-            ItemStack item = items.get(0).getRight();
-                if (entityLiving != null) {
-                    if (entityLiving instanceof EndermanEntity) {
-                        if (item.getItem() instanceof BlockItem) {
-                            BlockItem b = (BlockItem) item.getItem();
-                            // @todo 1.15 metadata
-                            ((EndermanEntity) entityLiving).setHeldBlockState(b.getBlock().getDefaultState());
+            LivingEntity entityLiving = event.getEntityLiving();
+            
+            final List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(ACTION_HELDITEM),entityLiving.getHeldItemMainhand());
+            if (items.isEmpty()) {
+                return;
+            }
+            if (items.size() == 1) {
+                ItemStack item = items.get(0).getRight();
+                    if (entityLiving != null) {
+                        if (entityLiving instanceof EndermanEntity) {
+                            if (item.getItem() instanceof BlockItem) {
+                                BlockItem b = (BlockItem) item.getItem();
+                                // @todo 1.15 metadata
+                                ((EndermanEntity) entityLiving).setHeldBlockState(b.getBlock().getDefaultState());
+                            }
+                        } else {
+                            entityLiving.setHeldItem(Hand.MAIN_HAND, item.copy());
                         }
-                    } else {
-                        entityLiving.setHeldItem(Hand.MAIN_HAND, item.copy());
                     }
-                }
 
-        } else {
-            final float total = getTotal(items);
-                if (entityLiving != null) {
-                    ItemStack item = getRandomItem(items, total);
-                    if (entityLiving instanceof EndermanEntity) {
-                        if (item.getItem() instanceof BlockItem) {
-                            BlockItem b = (BlockItem) item.getItem();
-                            // @todo 1.15 metadata
-                            ((EndermanEntity) entityLiving).setHeldBlockState(b.getBlock().getDefaultState());
+            } else {
+                final float total = getTotal(items);
+                    if (entityLiving != null) {
+                        ItemStack item = getRandomItem(items, total);
+                        if (entityLiving instanceof EndermanEntity) {
+                            if (item.getItem() instanceof BlockItem) {
+                                BlockItem b = (BlockItem) item.getItem();
+                                // @todo 1.15 metadata
+                                ((EndermanEntity) entityLiving).setHeldBlockState(b.getBlock().getDefaultState());
+                            }
+                        } else {
+                            entityLiving.setHeldItem(Hand.MAIN_HAND, item.copy());
                         }
-                    } else {
-                        entityLiving.setHeldItem(Hand.MAIN_HAND, item.copy());
                     }
-                }
 
-        }
-    });
+            }
+        });
     }
 
     private void addMobNBT(AttributeMap map) {
