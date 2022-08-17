@@ -17,8 +17,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class Tools {
-
     public static Pair<Float, ItemStack> parseStackWithFactor(String name, Logger logger) {
+        return parseStackWithFactor(name,logger,ItemStack.EMPTY);
+    }
+    public static Pair<Float, ItemStack> parseStackWithFactor(String name, Logger logger,ItemStack defaultItem) {
         int i = 0;
         while (i < name.length() && (Character.isDigit(name.charAt(i)) || name.charAt(i) == '.')) {
             i++;
@@ -31,29 +33,44 @@ public class Tools {
             } catch (NumberFormatException e) {
                 v = 1.0f;
             }
-            return Pair.of(v, parseStack(name.substring(i+1), logger));
+            return Pair.of(v, parseStack(name.substring(i+1), logger,defaultItem));
         }
 
-        return Pair.of(1.0f, parseStack(name, logger));
+        return Pair.of(1.0f, parseStack(name, logger,defaultItem));
     }
 
     public static Pair<Float, ItemStack> parseStackWithFactor(JsonObject obj, Logger logger) {
+        return parseStackWithFactor(obj,logger,ItemStack.EMPTY);
+    }
+
+    public static Pair<Float, ItemStack> parseStackWithFactor(JsonObject obj, Logger logger, ItemStack defaultItem) {
         float factor = 1.0f;
         if (obj.has("factor")) {
             factor = obj.get("factor").getAsFloat();
         }
-        ItemStack stack = parseStack(obj, logger);
+        ItemStack stack = parseStack(obj, logger,defaultItem);
         if (stack == null) {
             return null;
         }
         return Pair.of(factor, stack);
     }
-
     @Nonnull
     public static ItemStack parseStack(String name, Logger logger) {
+        return parseStack(name, logger,ItemStack.EMPTY);
+    }
+
+    @Nonnull
+    public static ItemStack parseStack(String name, Logger logger,ItemStack defaultItem) {
         if (name.contains("/")) {
             String[] split = StringUtils.split(name, "/");
-            ItemStack stack = parseStackNoNBT(split[0], logger);
+            ItemStack stack = ItemStack.EMPTY;
+            if(name=="..."){
+                stack=defaultItem;
+            }else{
+                stack = parseStackNoNBT(split[0], logger);
+            }
+
+            
             if (stack.isEmpty()) {
                 return stack;
             }
@@ -70,19 +87,29 @@ public class Tools {
             return parseStackNoNBT(name, logger);
         }
     }
+    public static ItemStack parseStack(JsonObject obj, Logger logger) {
+        return parseStack(obj, logger,ItemStack.EMPTY);
+    }
 
     @Nullable
-    public static ItemStack parseStack(JsonObject obj, Logger logger) {
+    public static ItemStack parseStack(JsonObject obj, Logger logger,ItemStack defaultItem) {
+
         if (obj.has("empty")) {
             return ItemStack.EMPTY;
         }
         String name = obj.get("item").getAsString();
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
-        if (item == null) {
-            logger.log(Level.ERROR, "Unknown item '" + name + "'!");
-            return null;
+        ItemStack stack = ItemStack.EMPTY;
+        if(name.equals("...")){
+            stack=defaultItem;            
+        }else{
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+            if (item == null) {
+                logger.log(Level.ERROR, "Unknown item '" + name + "'!");
+                return null;
+            }
+            stack = new ItemStack(item);
         }
-        ItemStack stack = new ItemStack(item);
+
         if (obj.has("damage")) {
             stack.setDamage(obj.get("damage").getAsInt());
         }

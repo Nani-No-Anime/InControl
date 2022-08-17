@@ -59,15 +59,17 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
     private static Random rnd = new Random();
-
     protected List<Pair<Float, ItemStack>> getItemsWeighted(List<String> itemNames) {
+        return this.getItemsWeighted(itemNames,ItemStack.EMPTY);
+    }
+    protected List<Pair<Float, ItemStack>> getItemsWeighted(List<String> itemNames,ItemStack defultItem) {
         List<Pair<Float, ItemStack>> items = new ArrayList<>();
         for (String json : itemNames) {
             JsonParser parser = new JsonParser();
             JsonElement element = parser.parse(json);
             if (element.isJsonPrimitive()) {
                 String name = element.getAsString();
-                Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(name, logger);
+                Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(name, logger,defultItem);
                 if (pair.getValue().isEmpty()) {
                     logger.log(Level.ERROR, "Unknown item '" + name + "'!");
                 } else {
@@ -75,7 +77,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 }
             } else if (element.isJsonObject()) {
                 JsonObject obj = element.getAsJsonObject();
-                Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(obj, logger);
+                Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(obj, logger,defultItem);
                 if (pair != null) {
                     items.add(pair);
                 }
@@ -732,14 +734,15 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
     private void addHeldItem(AttributeMap map) {
-        final List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(ACTION_HELDITEM));
+        actions.add(event -> {
+        LivingEntity entityLiving = event.getEntityLiving();
+        
+        final List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(ACTION_HELDITEM),entityLiving.getHeldItemMainhand());
         if (items.isEmpty()) {
             return;
         }
         if (items.size() == 1) {
             ItemStack item = items.get(0).getRight();
-            actions.add(event -> {
-                LivingEntity entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
                     if (entityLiving instanceof EndermanEntity) {
                         if (item.getItem() instanceof BlockItem) {
@@ -751,11 +754,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                         entityLiving.setHeldItem(Hand.MAIN_HAND, item.copy());
                     }
                 }
-            });
+
         } else {
             final float total = getTotal(items);
-            actions.add(event -> {
-                LivingEntity entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
                     ItemStack item = getRandomItem(items, total);
                     if (entityLiving instanceof EndermanEntity) {
@@ -768,8 +769,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                         entityLiving.setHeldItem(Hand.MAIN_HAND, item.copy());
                     }
                 }
-            });
+
         }
+    });
     }
 
     private void addMobNBT(AttributeMap map) {
