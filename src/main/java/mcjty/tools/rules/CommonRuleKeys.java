@@ -13,6 +13,13 @@ public interface CommonRuleKeys {
     Key<Integer> MAXLIGHT = Key.create(Type.INTEGER, "maxlight");
     Key<Integer> MINHEIGHT = Key.create(Type.INTEGER, "minheight");
     Key<Integer> MAXHEIGHT = Key.create(Type.INTEGER, "maxheight");
+
+    Key<Integer> MAXLATITUDE = Key.create(Type.INTEGER, "maxlatitude");
+    Key<Integer> MINLATITUDE = Key.create(Type.INTEGER, "minlatitude");
+    
+    Key<Integer> MAXLONGITUDE = Key.create(Type.INTEGER, "maxlongitude");
+    Key<Integer> MINLONGITUDE = Key.create(Type.INTEGER, "minlongitude");
+
     Key<Float> MINDIFFICULTY = Key.create(Type.FLOAT, "mindifficulty");
     Key<Float> MAXDIFFICULTY = Key.create(Type.FLOAT, "maxdifficulty");
     Key<Float> MINSPAWNDIST = Key.create(Type.FLOAT, "minspawndist");

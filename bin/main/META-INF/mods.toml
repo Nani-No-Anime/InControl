@@ -1,0 +1,22 @@
+modLoader="javafml"
+loaderVersion="[31,)"
+issueTrackerURL="http://github.com/McJtyMods/InControl/issues"
+displayURL="http://github.com/McJtyMods/InControl/"
+#logoFile="examplemod.png" #optional
+#credits="Thanks for this example mod goes to Java" #optional
+authors="McJty"
+
+[[mods]]
+modId="incontrol"
+version="${file.jarVersion}"
+displayName="InControl"
+#updateJSONURL="http://myurl.me/" #optional
+description='''
+Be in control of spawns
+'''
+[[dependencies.incontrol]]
+    modId="forge"
+    mandatory=true
+    versionRange="[31,)"
+    ordering="NONE"
+    side="BOTH"

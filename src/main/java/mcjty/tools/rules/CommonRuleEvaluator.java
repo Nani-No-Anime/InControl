@@ -83,6 +83,23 @@ public class CommonRuleEvaluator {
         if (map.has(MAXHEIGHT)) {
             addMaxHeightCheck(map);
         }
+
+        if (map.has(MAXLATITUDE)){
+            addMaxLatitudeCheck(map);
+        }
+        if (map.has(MINLATITUDE)){
+            addMinLatitudeCheck(map);
+        }
+
+        if (map.has(MAXLONGITUDE)){
+            addMaxLongitudeCheck(map);
+        }
+
+        if (map.has(MINLONGITUDE)){
+            addMinLongitudeCheck(map);
+        }
+
+
         if (map.has(WEATHER)) {
             addWeatherCheck(map);
         }
@@ -705,10 +722,38 @@ public class CommonRuleEvaluator {
         final int maxheight = map.get(MAXHEIGHT);
         checks.add((event,query) -> query.getY(event) <= maxheight);
     }
-
     private void addMinHeightCheck(AttributeMap map) {
         final int minheight = map.get(MINHEIGHT);
         checks.add((event,query) -> query.getY(event) >= minheight);
+    }
+
+
+        
+        
+
+        
+
+        
+
+
+    private void addMaxLatitudeCheck(AttributeMap map) {
+        final int maxheight = map.get(MAXLATITUDE);
+        checks.add((event,query) -> query.getX(event) <= maxheight);
+    }
+
+    private void addMinLatitudeCheck(AttributeMap map) {
+        final int minheight = map.get(MINLATITUDE);
+        checks.add((event,query) -> query.getX(event) >= minheight);
+    }
+
+    private void addMaxLongitudeCheck(AttributeMap map) {
+        final int maxheight = map.get(MAXLONGITUDE);
+        checks.add((event,query) -> query.getZ(event) <= maxheight);
+    }
+
+    private void addMinLongitudeCheck(AttributeMap map) {
+        final int minheight = map.get(MINLONGITUDE);
+        checks.add((event,query) -> query.getZ(event) >= minheight);
     }
 
 

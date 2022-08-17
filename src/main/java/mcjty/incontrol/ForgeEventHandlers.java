@@ -94,7 +94,9 @@ public class ForgeEventHandlers {
                 if (debug) {
                     InControl.setup.getLogger().log(Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
+                            + " x: " + event.getX()
                             + " y: " + event.getY()
+                            + " z: " + event.getZ()
                             + " biome: " + new TranslationTextComponent(event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getTranslationKey()).getFormattedText());
                 }
                 if (result != null) {

@@ -49,8 +49,16 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
+        public int getX(WorldEvent.PotentialSpawns o) {
+            return o.getPos().getX();
+        }
+        @Override
         public int getY(WorldEvent.PotentialSpawns o) {
             return o.getPos().getY();
+        }
+        @Override
+        public int getZ(WorldEvent.PotentialSpawns o) {
+            return o.getPos().getZ();
         }
 
         @Override
@@ -91,6 +99,10 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(MAXLIGHT))
                 .attribute(Attribute.create(MINHEIGHT))
                 .attribute(Attribute.create(MAXHEIGHT))
+                .attribute(Attribute.create(MAXLATITUDE))
+                .attribute(Attribute.create(MINLATITUDE))
+                .attribute(Attribute.create(MAXLONGITUDE))
+                .attribute(Attribute.create(MINLONGITUDE))
                 .attribute(Attribute.create(MINDIFFICULTY))
                 .attribute(Attribute.create(MAXDIFFICULTY))
                 .attribute(Attribute.create(MINSPAWNDIST))

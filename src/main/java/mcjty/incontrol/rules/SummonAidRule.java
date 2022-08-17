@@ -60,8 +60,16 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         }
 
         @Override
+        public int getX(ZombieEvent.SummonAidEvent o) {
+            return o.getX();
+        }
+        @Override
         public int getY(ZombieEvent.SummonAidEvent o) {
             return o.getY();
+        }
+        @Override
+        public int getZ(ZombieEvent.SummonAidEvent o) {
+            return o.getZ();
         }
 
         @Override
@@ -102,6 +110,10 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.create(MAXLIGHT))
                 .attribute(Attribute.create(MINHEIGHT))
                 .attribute(Attribute.create(MAXHEIGHT))
+                .attribute(Attribute.create(MAXLATITUDE))
+                .attribute(Attribute.create(MINLATITUDE))
+                .attribute(Attribute.create(MAXLONGITUDE))
+                .attribute(Attribute.create(MINLONGITUDE))
                 .attribute(Attribute.create(MINDIFFICULTY))
                 .attribute(Attribute.create(MAXDIFFICULTY))
                 .attribute(Attribute.create(MINSPAWNDIST))

@@ -40,8 +40,18 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
+        public int getX(LivingExperienceDropEvent o) {
+            return o.getEntity().getPosition().getX();
+        }
+
+        @Override
         public int getY(LivingExperienceDropEvent o) {
             return o.getEntity().getPosition().getY();
+        }
+        
+        @Override
+        public int getZ(LivingExperienceDropEvent o) {
+            return o.getEntity().getPosition().getZ();
         }
 
         @Override
@@ -79,6 +89,10 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(MAXLIGHT))
                 .attribute(Attribute.create(MINHEIGHT))
                 .attribute(Attribute.create(MAXHEIGHT))
+                .attribute(Attribute.create(MAXLATITUDE))
+                .attribute(Attribute.create(MINLATITUDE))
+                .attribute(Attribute.create(MAXLONGITUDE))
+                .attribute(Attribute.create(MINLONGITUDE))
                 .attribute(Attribute.create(MINDIFFICULTY))
                 .attribute(Attribute.create(MAXDIFFICULTY))
                 .attribute(Attribute.create(MINSPAWNDIST))
