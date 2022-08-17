@@ -42,7 +42,6 @@ public class RulesManager {
     }
 
     public static boolean readCustomSpawn(String file) {
-        System.out.println("file = " + file);
         if (!exists(file)) {
             return false;
         }

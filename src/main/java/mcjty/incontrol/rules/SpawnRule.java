@@ -213,6 +213,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_SPEEDADD))
                 .attribute(Attribute.create(ACTION_DAMAGEMULTIPLY))
                 .attribute(Attribute.create(ACTION_DAMAGEADD))
+                .attribute(Attribute.create(ACTION_ATTRIBUTES))
                 .attribute(Attribute.create(ACTION_SIZEMULTIPLY))
                 .attribute(Attribute.create(ACTION_SIZEADD))
                 .attribute(Attribute.create(ACTION_ANGRY))

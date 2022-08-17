@@ -155,6 +155,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.create(ACTION_DAMAGEADD))
                 .attribute(Attribute.create(ACTION_SIZEMULTIPLY))
                 .attribute(Attribute.create(ACTION_SIZEADD))
+                .attribute(Attribute.create(ACTION_ATTRIBUTES))
                 .attribute(Attribute.create(ACTION_ANGRY))
                 .attribute(Attribute.createMulti(ACTION_HELDITEM))
                 .attribute(Attribute.createMulti(ACTION_ARMORBOOTS))

@@ -5,6 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import mcjty.incontrol.InControl;
+import mcjty.incontrol.rules.support.AttributesScalerMap;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.Key;
 import mcjty.tools.varia.LookAtTools;
@@ -34,6 +37,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -53,9 +57,11 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
     protected final Logger logger;
     protected final List<Consumer<T>> actions = new ArrayList<>();
+    private AttributesScalerMap attributesScaler  = new AttributesScalerMap();
 
     public RuleBase(Logger logger) {
         this.logger = logger;
+        this.attributesScaler = new AttributesScalerMap(logger);
     }
 
     private static Random rnd = new Random();
@@ -127,6 +133,10 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (map.has(ACTION_REMOVESTAGE)) {
             addRemoveStage(map, layer);
         }
+        if (map.has(ACTION_ATTRIBUTES)) {
+            addScalerAttributes(map);
+        }
+
         if (map.has(ACTION_HEALTHMULTIPLY) || map.has(ACTION_HEALTHADD)) {
             addHealthAction(map);
         }
@@ -640,17 +650,51 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
+    private void addScalerAttributes(AttributeMap map) {
+        
+        String json = map.has(ACTION_ATTRIBUTES) ? map.get(ACTION_ATTRIBUTES) : "";
+        System.out.print(json);
+        if(json!=""){
+            JsonParser parser = new JsonParser();
+            JsonElement element = parser.parse(json);
+            if (element.isJsonPrimitive()) {
+                InControl.setup.getLogger().log(Level.ERROR, element);
+            } else if (element.isJsonObject()) {
+                JsonObject obj = element.getAsJsonObject();
+                actions.add(event -> {
+                    LivingEntity entityLiving = event.getEntityLiving();
+                    
+                    Random random = new Random(stringToSeed(entityLiving.getUniqueID().toString()));
+                    attributesScaler = new AttributesScalerMap(obj,logger,random);
+                });
+                if (attributesScaler.hasHealthMultiplyer()) {
+                    addHealthAction(map);
+                }
+                if (attributesScaler.hasSpeedMultiplyer()) {
+                    addSpeedAction(map);
+                }
+                if (attributesScaler.hasDamageMultiplyer()) {
+                    addDamageAction(map);
+                }
+                
+            } else {
+
+            }
+        }
+    }
 
     private void addHealthAction(AttributeMap map) {
-        float m = map.has(ACTION_HEALTHMULTIPLY) ? map.get(ACTION_HEALTHMULTIPLY) : 1;
+        float m = (map.has(ACTION_HEALTHMULTIPLY) ? map.get(ACTION_HEALTHMULTIPLY) : 1);
         float a = map.has(ACTION_HEALTHADD) ? map.get(ACTION_HEALTHADD) : 0;
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
+                float mult = attributesScaler.hasHealthMultiplyer()?(float)attributesScaler.HealthMultiplyer:m;
                 if (!entityLiving.getTags().contains("ctrlHealth")) {
                     IAttributeInstance entityAttribute = entityLiving.getAttribute(SharedMonsterAttributes.MAX_HEALTH);
                     if (entityAttribute != null) {
-                        double newMax = entityAttribute.getBaseValue() * m + a;
+                        double newMax = entityAttribute.getBaseValue() * mult + a;
+                        logger.log(Level.INFO,"setHealth : " + entityAttribute.getBaseValue() + " * " + mult + " + " + a + " = " + newMax);
                         entityAttribute.setBaseValue(newMax);
                         entityLiving.setHealth((float) newMax);
                         entityLiving.addTag("ctrlHealth");
@@ -666,10 +710,12 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
+                float mult = attributesScaler.hasSpeedMultiplyer()?(float)attributesScaler.SpeedMultiplyer:m;
                 if (!entityLiving.getTags().contains("ctrlSpeed")) {
                     IAttributeInstance entityAttribute = entityLiving.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
                     if (entityAttribute != null) {
-                        double newMax = entityAttribute.getBaseValue() * m + a;
+                        double newMax = entityAttribute.getBaseValue() * mult + a;
+                        logger.log(Level.INFO,"setSpeed : " + entityAttribute.getBaseValue() + " * " + mult + " + " + a + " = " + newMax);
                         entityAttribute.setBaseValue(newMax);
                         entityLiving.addTag("ctrlSpeed");
                     }
@@ -697,10 +743,12 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
+                float mult = attributesScaler.hasDamageMultiplyer()?(float)attributesScaler.DamageMultiplyer:m;
                 if (!entityLiving.getTags().contains("ctrlDamage")) {
                     IAttributeInstance entityAttribute = entityLiving.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
                     if (entityAttribute != null) {
-                        double newMax = entityAttribute.getBaseValue() * m + a;
+                        double newMax = entityAttribute.getBaseValue() * mult + a;
+                        logger.log(Level.INFO,"newDamage : " + entityAttribute.getBaseValue() + " * " + mult + " + " + a + " = " + newMax);
                         entityAttribute.setBaseValue(newMax);
                         entityLiving.addTag("ctrlDamage");
                     }
@@ -790,13 +838,25 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             });
         }
     }
-
+    private static long stringToSeed(String s) {
+        if (s == null) {
+            return 0;
+        }
+        long hash = 0;
+        for (char c : s.toCharArray()) {
+            hash = 31L*hash + c;
+        }
+        return hash;
+    }
     private void addCustomName(AttributeMap map) {
         String customName = map.get(ACTION_CUSTOMNAME);
         if (customName != null) {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
-                entityLiving.setCustomName(new StringTextComponent(customName));
+                String origionalName= new TranslationTextComponent("entity."+entityLiving.getEntityString().replace(":", ".")).getFormattedText();
+                Random random = new Random(stringToSeed(entityLiving.getUniqueID().toString()));
+                String formatedName = String.format(customName, origionalName,random.nextInt(3)+1);
+                entityLiving.setCustomName(new StringTextComponent(formatedName));
             });
         }
     }

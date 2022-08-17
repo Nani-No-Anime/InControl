@@ -85,6 +85,22 @@ public interface CommonRuleKeys {
     Key<Float> ACTION_SIZEMULTIPLY = Key.create(Type.FLOAT, "sizemultiply");
     Key<Float> ACTION_SIZEADD = Key.create(Type.FLOAT, "sizeadd");
 
+    /* Random scaler you can use 
+     * Corrected values :
+     *   Static Number : 1
+     *   range { min:1, max:100 }
+     *
+     * Attributes of corrected values :
+     *   mix between static number or range {health: 1, speed: {min: 1, max:1000} }
+     * 
+     * Table Values as a table of corrected values
+     * {
+     * scale: [min:1,max:3]
+     * health: [1,{min:2,max:99},100]
+     * 
+     * }
+    */
+    Key<String> ACTION_ATTRIBUTES = Key.create(Type.JSON, "attributes");
     Key<String> ACTION_POTION = Key.create(Type.STRING, "potion");
     Key<String> ACTION_HELDITEM = Key.create(Type.JSON, "helditem");
     Key<String> ACTION_ARMORCHEST = Key.create(Type.JSON, "armorchest");
