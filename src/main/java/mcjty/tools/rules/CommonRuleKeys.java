@@ -2,10 +2,12 @@ package mcjty.tools.rules;
 
 import mcjty.tools.typed.Key;
 import mcjty.tools.typed.Type;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.dimension.DimensionType;
 
 public interface CommonRuleKeys {
-
+    
+    Key<String> NAME = Key.create(Type.STRING, "rulename");
     // Inputs
     Key<Integer> MINTIME = Key.create(Type.INTEGER, "mintime");
     Key<Integer> MAXTIME = Key.create(Type.INTEGER, "maxtime");

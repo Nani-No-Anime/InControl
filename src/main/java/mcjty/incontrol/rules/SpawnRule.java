@@ -145,6 +145,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(NAME))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
                 .attribute(Attribute.create(MINCOUNT))
@@ -157,6 +158,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(MINLATITUDE))
                 .attribute(Attribute.create(MAXLONGITUDE))
                 .attribute(Attribute.create(MINLONGITUDE))
+                .attribute(Attribute.create(ACTION_ATTRIBUTES))
                 .attribute(Attribute.create(MINDIFFICULTY))
                 .attribute(Attribute.create(MAXDIFFICULTY))
                 .attribute(Attribute.create(MINSPAWNDIST))
@@ -213,7 +215,6 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_SPEEDADD))
                 .attribute(Attribute.create(ACTION_DAMAGEMULTIPLY))
                 .attribute(Attribute.create(ACTION_DAMAGEADD))
-                .attribute(Attribute.create(ACTION_ATTRIBUTES))
                 .attribute(Attribute.create(ACTION_SIZEMULTIPLY))
                 .attribute(Attribute.create(ACTION_SIZEADD))
                 .attribute(Attribute.create(ACTION_ANGRY))

@@ -54,7 +54,12 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (map.has(PASSIVE)) {
             addPassiveCheck(map);
         }
-
+        if (map.has(MOD)) {
+            addModsCheck(map);
+        }
+        if (map.has(MOB)) {
+            addMobsCheck(map);
+        }
         if (map.has(CANSPAWNHERE)) {
             addCanSpawnHereCheck(map);
         }
@@ -63,10 +68,6 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
         if (map.has(SPAWNER)) {
             addSpawnerCheck(map);
-        }
-
-        if (map.has(MOB)) {
-            addMobsCheck(map);
         }
         if (map.has(PLAYER)) {
             addPlayerCheck(map);
@@ -93,9 +94,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (map.has(SOURCE)) {
             addSourceCheck(map);
         }
-        if (map.has(MOD)) {
-            addModsCheck(map);
-        }
+
         if (map.has(MINCOUNT)) {
             addMinCountCheck(map);
         }
@@ -188,9 +187,23 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event, query) -> !(query.getEntity(event) instanceof AnimalEntity && !(query.getEntity(event) instanceof IMob)));
         }
     }
+private boolean entityTypeCheck(AttributeMap map,Set<EntityType> classes,IEventQuery query,Event event){
+    if(map.has(NAME)){
+        String name = map.get(NAME);
+        //System.out.println("name : " + name);
+    }
+    EntityType eventType=query.getEntity(event).getType();
+    //System.out.println(eventType.getRegistryName());
+    for (EntityType entityType : classes) {
+        //System.out.println(entityType.getRegistryName());
+    }
+    return classes.contains(eventType);
 
+}
     private void addMobsCheck(AttributeMap map) {
         List<String> mobs = map.getList(MOB);
+
+        //System.out.println("mobs.size()"+mobs.size());
         if (mobs.size() == 1) {
             String id = mobs.get(0);
             EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
@@ -203,6 +216,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             Set<EntityType> classes = new HashSet<>();
             for (String id : mobs) {
                 EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+
                 if (type != null) {
                     classes.add(type);
                 } else {
@@ -210,17 +224,19 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 }
             }
             if (!classes.isEmpty()) {
-                checks.add((event, query) -> classes.contains(query.getEntity(event).getType()));
+                checks.add((event, query) -> entityTypeCheck(map,classes,query, event));
             }
         }
     }
 
     private void addModsCheck(AttributeMap map) {
         List<String> mods = map.getList(MOD);
+        
         if (mods.size() == 1) {
             String modid = mods.get(0);
             checks.add((event, query) -> {
                 String mod = query.getEntity(event).getType().getRegistryName().getNamespace();
+                //this.logger.log(Level.INFO,mods.toString()+"=>"+mod);
                 return modid.equals(mod);
             });
         } else {
@@ -230,6 +246,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             }
             checks.add((event, query) -> {
                 String mod = query.getEntity(event).getType().getRegistryName().getNamespace();
+                //this.logger.log(Level.INFO,mods.toString()+"=>"+mod);
                 return modids.contains(mod);
             });
         }

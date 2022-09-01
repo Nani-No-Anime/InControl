@@ -7,6 +7,8 @@ import mcjty.tools.typed.Type;
 
 public interface RuleKeys extends CommonRuleKeys {
 
+    Key<String> NAME = Key.create(Type.STRING, "rulename");
+
     // Inputs
     Key<String> MINCOUNT = Key.create(Type.JSON, "mincount");
     Key<String> MAXCOUNT = Key.create(Type.JSON, "maxcount");

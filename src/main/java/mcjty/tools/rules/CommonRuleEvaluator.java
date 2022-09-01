@@ -11,6 +11,7 @@ import mcjty.tools.varia.LookAtTools;
 import mcjty.tools.varia.Tools;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
@@ -33,6 +34,8 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -42,6 +45,10 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.xml.bind.DatatypeConverter;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -53,7 +60,7 @@ import static mcjty.tools.rules.CommonRuleKeys.*;
 public class CommonRuleEvaluator {
 
     protected final List<BiFunction<Event, IEventQuery, Boolean>> checks = new ArrayList<>();
-    private final Logger logger;
+    public final Logger logger;
     private final IModRuleCompatibilityLayer compatibility;
 
     public CommonRuleEvaluator(AttributeMap map, Logger logger, IModRuleCompatibilityLayer compatibility) {
@@ -76,29 +83,6 @@ public class CommonRuleEvaluator {
         if (map.has(MAXTIME)) {
             addMaxTimeCheck(map);
         }
-
-        if (map.has(MINHEIGHT)) {
-            addMinHeightCheck(map);
-        }
-        if (map.has(MAXHEIGHT)) {
-            addMaxHeightCheck(map);
-        }
-
-        if (map.has(MAXLATITUDE)){
-            addMaxLatitudeCheck(map);
-        }
-        if (map.has(MINLATITUDE)){
-            addMinLatitudeCheck(map);
-        }
-
-        if (map.has(MAXLONGITUDE)){
-            addMaxLongitudeCheck(map);
-        }
-
-        if (map.has(MINLONGITUDE)){
-            addMinLongitudeCheck(map);
-        }
-
 
         if (map.has(WEATHER)) {
             addWeatherCheck(map);
@@ -299,6 +283,10 @@ public class CommonRuleEvaluator {
             } else {
                 logger.warn("Baubles is missing: this test cannot work!");
             }
+        }
+        
+        if (map.has(MINHEIGHT) || map.has(MAXHEIGHT) || map.has(MAXLATITUDE)|| map.has(MINLATITUDE)||map.has(MAXLONGITUDE) ||map.has(MINLONGITUDE)){
+            addLocationCheck(map);
         }
     }
 
@@ -718,44 +706,97 @@ public class CommonRuleEvaluator {
         checks.add((event,query) -> query.getWorld(event).getDifficultyForLocation(query.getPos(event)).getAdditionalDifficulty() <= maxdifficulty);
     }
 
-    private void addMaxHeightCheck(AttributeMap map) {
-        final int maxheight = map.get(MAXHEIGHT);
-        checks.add((event,query) -> query.getY(event) <= maxheight);
-    }
-    private void addMinHeightCheck(AttributeMap map) {
-        final int minheight = map.get(MINHEIGHT);
-        checks.add((event,query) -> query.getY(event) >= minheight);
-    }
-
-
+    private void addLocationCheck(AttributeMap map) {
+        boolean[] positionsChecks= {map.has(MINLATITUDE),map.has(MAXLATITUDE),map.has(MINHEIGHT),map.has(MAXHEIGHT),map.has(MINLONGITUDE),map.has(MAXLONGITUDE)};
+        String name="";
+        if(map.has(NAME)){
+            name = map.get(NAME);
+            logger.log(Level.INFO, "Name"+name);
+        }
+        int[] positionValues= {
+           positionsChecks[0]?map.get(MINLATITUDE):0,
+           positionsChecks[1]?map.get(MAXLATITUDE):0,
+           positionsChecks[2]?map.get(MINHEIGHT):0,
+           positionsChecks[3]?map.get(MAXHEIGHT):0,
+           positionsChecks[4]?map.get(MINLONGITUDE):0,
+           positionsChecks[5]?map.get(MAXLONGITUDE):0
+        };
+        String dataString=map.values.toString();
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(dataString.getBytes());
+            String subtag = DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
+            checks.add((event,query) -> comparePosition(positionsChecks,positionValues,event,query,logger,subtag,map));
+        }
+        catch (NoSuchAlgorithmException e) {
+            System.err.println("I'm sorry, but MD5 is not a valid message digest algorithm");
+            String subtag= Base64.getEncoder().encodeToString(dataString.getBytes());
+            checks.add((event,query) -> comparePosition(positionsChecks,positionValues,event,query,logger,subtag,map));
+        }
         
         
+    }
+    private static boolean comparePosition(boolean[] positionsChecks,int[] positionValues,Event event, IEventQuery query,Logger logger,String subtag, AttributeMap map){
 
+        /*
+        logger.log(Level.INFO,map.values.toString()+" "+map.values.get(NAME));
+        logger.log(Level.INFO, "subtag "+subtag);
+        */
+        BlockPos pos=query.getPos(event);
+        LivingEntity entityLiving = null;
+        //logger.log(Level.INFO, "Event" + event.toString());
+        if(event instanceof EntityJoinWorldEvent){
+            entityLiving = (LivingEntity) ((EntityJoinWorldEvent) event).getEntity();
+        }else if(event instanceof LivingSpawnEvent){
+            entityLiving =(LivingEntity) ((LivingSpawnEvent) event).getEntityLiving();
+            
+        }else{
+            logger.log(Level.ERROR, "Event Unexpected Type" + event.toString());
+        }
         
+        //logger.log(Level.INFO, entityLiving + "");
+        boolean insideBox = true;
+        boolean validCheckRan = false;
+        if (entityLiving != null) {
+            String tag= "in"+subtag;
+            boolean haveCheckedLocationBefore=entityLiving.getTags().contains(tag);
+            //logger.log(Level.INFO,"haveCheckedLocationBefore = "+haveCheckedLocationBefore);
 
-        
+            if (!haveCheckedLocationBefore){
+                entityLiving.addTag(tag);
+                //logger.log(Level.INFO, "pos"+" + "+pos.getX()+" , "+pos.getY()+" , "+pos.getZ());
+                for (int i = 0; i < positionsChecks.length; i++) {
+                    if (!insideBox) continue;
+                    int currentPositionValue=-1;
+                    if(positionsChecks[i]){
+                        validCheckRan=true;
+                        if(i<2){
+                            //logger.log(Level.INFO, "posX"+" + "+pos.getZ());
+                            currentPositionValue=pos.getX();
+                        }else if(i<4){
+                            //logger.log(Level.INFO, "posY"+" + "+pos.getY());
+                            currentPositionValue=pos.getY();
+                        }else if(i<6){
+                            //logger.log(Level.INFO, "posZ"+" + "+pos.getZ());
+                            currentPositionValue=pos.getZ();
+                        }
+                        if(i%2==0){                            
+                            insideBox &= currentPositionValue>=positionValues[i];
+                            //logger.log(Level.INFO, " >= "+positionValues[i] + " == "+insideBox);
+                        }else{
+                            insideBox &= currentPositionValue<=positionValues[i];
+                            //logger.log(Level.INFO, " <= "+positionValues[i] + " == "+insideBox);
+                        }
+                    }
+                }
 
 
-    private void addMaxLatitudeCheck(AttributeMap map) {
-        final int maxheight = map.get(MAXLATITUDE);
-        checks.add((event,query) -> query.getX(event) <= maxheight);
+            }
+
+        }
+        //logger.log(Level.INFO, insideBox+""+validCheckRan);
+        return insideBox && validCheckRan;
     }
-
-    private void addMinLatitudeCheck(AttributeMap map) {
-        final int minheight = map.get(MINLATITUDE);
-        checks.add((event,query) -> query.getX(event) >= minheight);
-    }
-
-    private void addMaxLongitudeCheck(AttributeMap map) {
-        final int maxheight = map.get(MAXLONGITUDE);
-        checks.add((event,query) -> query.getZ(event) <= maxheight);
-    }
-
-    private void addMinLongitudeCheck(AttributeMap map) {
-        final int minheight = map.get(MINLONGITUDE);
-        checks.add((event,query) -> query.getZ(event) >= minheight);
-    }
-
 
     public boolean match(Event event, IEventQuery query) {
         for (BiFunction<Event, IEventQuery, Boolean> rule : checks) {

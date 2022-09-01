@@ -3,6 +3,7 @@ package mcjty.incontrol.rules.support;
 import java.util.ArrayList;
 import java.util.Random;
 
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +17,7 @@ public class AttributesScalerMap {
 
     protected final Logger logger;
     protected Random random;
-    public int weight = 1;
+    public int EntityLevel = 1;
     public float HealthMultiplyer = 1;
     public float SpeedMultiplyer = 1;
     public float DamageMultiplyer = 1;
@@ -44,7 +45,6 @@ public class AttributesScalerMap {
 
     public AttributesScalerMap(JsonObject attributes, Logger logger, Random random) {
         this(logger, random);
-        logger.log(Level.INFO, "atttributes => " + attributes.toString());
         if (attributes.has("scale")) {
             JsonElement scaleMapElement = attributes.get("scale");
             if (scaleMapElement.isJsonObject()) {
@@ -56,38 +56,40 @@ public class AttributesScalerMap {
                     if (minElement.isJsonPrimitive() && maxElement.isJsonPrimitive()) {
                         int min = minElement.getAsInt();
                         int max = maxElement.getAsInt();
-                        this.WeightRange = max - min + 1;
-                        int selectedRange = this.random.nextInt(this.WeightRange - 1);
-
                         if (scaleMapObject.has("weight")) {
                             JsonElement weightElement = scaleMapObject.get("weight");
                             ArrayList<Integer> weightedValues = JsonArrayToIntArray(weightElement);
                             ArrayList<Integer> weights = new ArrayList<Integer>();
-                            logger.log(Level.INFO, "weightedValues :" + weightedValues.toString());
-                            if (weightedValues.size() == this.WeightRange) {
+                            int range = max - min + 1;
+                            int selectedRange = 1;
+                            if (weightedValues.size() == range) {
+                                this.WeightRange=0;
                                 for (int i = 0; i < weightedValues.size(); i++) {
                                     Integer weight = weightedValues.get(i);
                                     for (int a = 0; a < weight; a++) {
-                                        weights.add(i + 1);
+                                        weights.add(min + i);
                                     }
+                                    this.WeightRange+=weight;
                                 }
+                                selectedRange=this.random.nextInt(this.WeightRange);
 
-                                logger.log(Level.INFO, "weights" + weights.toString());
+                                
+
+                                if (weights.size() > 1) {
+                                    this.EntityLevel = weights.get(selectedRange);
+
+                                    
+                                } 
+                            }else {
+                                this.WeightRange=range;
+                                selectedRange = this.random.nextInt(this.WeightRange)+1;
+                                this.EntityLevel = selectedRange + min;
                             }
 
-                            if (weights.size() > 1) {
-                                this.weight = weights.get(selectedRange) + min;
-                            } else {
-                                this.weight = selectedRange + min;
-                            }
-
-                            logger.log(Level.INFO, weight);
                         }
                         this.HealthMultiplyer = attributeMinMaxScaller(attributes, "healthmultiply");
                         this.DamageMultiplyer = attributeMinMaxScaller(attributes, "damagemultiply");
                         this.SpeedMultiplyer = attributeMinMaxScaller(attributes, "speedmultiply");
-                        logger.log(Level.INFO,
-                                this.HealthMultiplyer + "," + this.DamageMultiplyer + "," + this.SpeedMultiplyer);
 
                     }
                 }
@@ -104,13 +106,25 @@ public class AttributesScalerMap {
             if (attributeElement.isJsonArray()) {
 
                 JsonArray attributeArray = attributeElement.getAsJsonArray();
-                if (attributeArray.size() == this.WeightRange && attributeArray.get(this.weight - 1).isJsonObject()) {
-                    JsonObject healtObject = attributeArray.get(this.weight - 1).getAsJsonObject();
+                if (attributeArray.size() == this.WeightRange && attributeArray.get(this.EntityLevel - 1).isJsonObject()) {
+                    JsonObject healtObject = attributeArray.get(this.EntityLevel - 1).getAsJsonObject();
                     if (healtObject.has("min") && healtObject.has("max")) {
                         double min = healtObject.get("min").getAsDouble();
                         double max = healtObject.get("max").getAsDouble();
-                        logger.log(Level.INFO, attributeName + " min,max = " + min + " " + max);
                         return (float) MathHelper.lerp(this.random.nextDouble(), min, max);
+                    }
+                }
+            } else if (attributeElement.isJsonObject()) {
+                JsonObject attributeObject = attributeElement.getAsJsonObject();
+                if (attributeObject.has("scale") && attributeObject.has("start")) {
+                    JsonElement scaleElement = attributeObject.get("scale");
+                    JsonElement StartElement = attributeObject.get("start");
+
+                    if (scaleElement.isJsonPrimitive() && StartElement.isJsonPrimitive()) {
+                        Float scalable=(float)(StartElement.getAsDouble() + this.EntityLevel * scaleElement.getAsDouble());
+                        return scalable;
+                    }else{
+                        logger.log(Level.WARN, attributeName +"=> NAN");
                     }
                 }
             }

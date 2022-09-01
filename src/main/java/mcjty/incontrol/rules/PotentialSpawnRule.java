@@ -91,6 +91,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(NAME))
                 .attribute(Attribute.create(MINCOUNT))
                 .attribute(Attribute.create(MAXCOUNT))
                 .attribute(Attribute.create(MINTIME))
@@ -103,6 +104,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(MINLATITUDE))
                 .attribute(Attribute.create(MAXLONGITUDE))
                 .attribute(Attribute.create(MINLONGITUDE))
+                .attribute(Attribute.create(ACTION_ATTRIBUTES))
                 .attribute(Attribute.create(MINDIFFICULTY))
                 .attribute(Attribute.create(MAXDIFFICULTY))
                 .attribute(Attribute.create(MINSPAWNDIST))
@@ -123,7 +125,6 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
-
                 .attribute(Attribute.createMulti(ACTION_REMOVE_MOBS))
         ;
 

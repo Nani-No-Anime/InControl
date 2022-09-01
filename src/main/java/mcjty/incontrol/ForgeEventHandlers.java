@@ -7,6 +7,7 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -22,6 +23,7 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.function.Predicate;
 
 public class ForgeEventHandlers {
 
-    public static boolean debug = false;
+    public static boolean debug = true;
 
     @SubscribeEvent
     public void serverLoad(FMLServerStartingEvent event) {
@@ -43,7 +45,7 @@ public class ForgeEventHandlers {
         if (!(event.getEntity() instanceof LivingEntity)) {
             return;
         }
-        if (event.getWorld().isRemote) {
+        if(event.getWorld().isRemote()){
             return;
         }
         for (SpawnRule rule : RulesManager.rules) {
@@ -52,7 +54,10 @@ public class ForgeEventHandlers {
                 if (debug) {
                     InControl.setup.getLogger().log(Level.INFO, "Join Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
-                            + " y: " + event.getEntity().getPosition().getY());
+                            + " x: " + event.getEntity().getPosition().getX()
+                            + " y: " + event.getEntity().getPosition().getY()
+                            + " z: " + event.getEntity().getPosition().getZ()
+                            );
                 }
                 if (result != Event.Result.DENY) {
                     rule.action(event);
@@ -122,7 +127,9 @@ public class ForgeEventHandlers {
                 if (debug) {
                     InControl.setup.getLogger().log(Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
+                            + " x: " + event.getX()
                             + " y: " + event.getY()
+                            + " z: " + event.getZ()
                             + " biome: " + new TranslationTextComponent(event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getTranslationKey()).getFormattedText());
                 }
                 event.setResult(result);
@@ -170,7 +177,9 @@ public class ForgeEventHandlers {
                 if (debug) {
                     InControl.setup.getLogger().log(Level.INFO, "Experience Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
-                            + " y: " + event.getEntity().getPosition().getY());
+                            + " x: " + event.getEntity().getPosition().getX()
+                            + " y: " + event.getEntity().getPosition().getY()
+                            + " z: " + event.getEntity().getPosition().getZ());
                 }
                 if (result != Event.Result.DENY) {
                     int newxp = rule.modifyXp(event.getDroppedExperience());

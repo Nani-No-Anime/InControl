@@ -5,7 +5,7 @@ import java.util.*;
 
 public class AttributeMap {
 
-    private final Map<Key<?>, Object> values = new HashMap<>();
+    public final Map<Key<?>, Object> values = new HashMap<>();
 
     public <A> boolean has(@Nonnull Key<A> key) {
         return values.containsKey(key);

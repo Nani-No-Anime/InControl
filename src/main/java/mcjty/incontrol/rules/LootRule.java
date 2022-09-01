@@ -96,6 +96,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(NAME))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
                 .attribute(Attribute.create(MINLIGHT))
@@ -106,6 +107,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(MINLATITUDE))
                 .attribute(Attribute.create(MAXLONGITUDE))
                 .attribute(Attribute.create(MINLONGITUDE))
+                .attribute(Attribute.create(ACTION_ATTRIBUTES))
                 .attribute(Attribute.create(MINDIFFICULTY))
                 .attribute(Attribute.create(MAXDIFFICULTY))
                 .attribute(Attribute.create(MINSPAWNDIST))

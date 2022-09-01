@@ -124,6 +124,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
     protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
+        if (map.has(ACTION_ATTRIBUTES)) {
+            addScalerAttributes(map);
+        }
         if (map.has(ACTION_COMMAND)) {
             addCommandAction(map);
         }
@@ -133,10 +136,6 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (map.has(ACTION_REMOVESTAGE)) {
             addRemoveStage(map, layer);
         }
-        if (map.has(ACTION_ATTRIBUTES)) {
-            addScalerAttributes(map);
-        }
-
         if (map.has(ACTION_HEALTHMULTIPLY) || map.has(ACTION_HEALTHADD)) {
             addHealthAction(map);
         }
@@ -221,7 +220,6 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             }
         }
     }
-
     private static Map<String, DamageSource> damageMap = null;
 
     private static void addSource(DamageSource source) {
@@ -651,7 +649,6 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
     private void addScalerAttributes(AttributeMap map) {
-        
         String json = map.has(ACTION_ATTRIBUTES) ? map.get(ACTION_ATTRIBUTES) : "";
         System.out.print(json);
         if(json!=""){
@@ -667,16 +664,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                     Random random = new Random(stringToSeed(entityLiving.getUniqueID().toString()));
                     attributesScaler = new AttributesScalerMap(obj,logger,random);
                 });
-                if (attributesScaler.hasHealthMultiplyer()) {
-                    addHealthAction(map);
-                }
-                if (attributesScaler.hasSpeedMultiplyer()) {
-                    addSpeedAction(map);
-                }
-                if (attributesScaler.hasDamageMultiplyer()) {
-                    addDamageAction(map);
-                }
-                
+                addHealthAction(map);
+                addSpeedAction(map);
+                addDamageAction(map);                
             } else {
 
             }
@@ -694,7 +684,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                     IAttributeInstance entityAttribute = entityLiving.getAttribute(SharedMonsterAttributes.MAX_HEALTH);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * mult + a;
-                        logger.log(Level.INFO,"setHealth : " + entityAttribute.getBaseValue() + " * " + mult + " + " + a + " = " + newMax);
+                        //logger.log(Level.INFO,"setHealth : " + entityAttribute.getBaseValue() + " * " + mult + " + " + a + " = " + newMax);
                         entityAttribute.setBaseValue(newMax);
                         entityLiving.setHealth((float) newMax);
                         entityLiving.addTag("ctrlHealth");
@@ -715,7 +705,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                     IAttributeInstance entityAttribute = entityLiving.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * mult + a;
-                        logger.log(Level.INFO,"setSpeed : " + entityAttribute.getBaseValue() + " * " + mult + " + " + a + " = " + newMax);
+                        //logger.log(Level.INFO,"setSpeed : " + entityAttribute.getBaseValue() + " * " + mult + " + " + a + " = " + newMax);
                         entityAttribute.setBaseValue(newMax);
                         entityLiving.addTag("ctrlSpeed");
                     }
@@ -747,8 +737,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 if (!entityLiving.getTags().contains("ctrlDamage")) {
                     IAttributeInstance entityAttribute = entityLiving.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
                     if (entityAttribute != null) {
-                        double newMax = entityAttribute.getBaseValue() * mult + a;
-                        logger.log(Level.INFO,"newDamage : " + entityAttribute.getBaseValue() + " * " + mult + " + " + a + " = " + newMax);
+                        double newMax = Math.abs(entityAttribute.getBaseValue()) * mult + a;
+                        //logger.log(Level.INFO,"newDamage : " + Math.abs(entityAttribute.getBaseValue()) + " * " + mult + " + " + a + " = " + newMax);
                         entityAttribute.setBaseValue(newMax);
                         entityLiving.addTag("ctrlDamage");
                     }
@@ -854,8 +844,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
                 String origionalName= new TranslationTextComponent("entity."+entityLiving.getEntityString().replace(":", ".")).getFormattedText();
-                Random random = new Random(stringToSeed(entityLiving.getUniqueID().toString()));
-                String formatedName = String.format(customName, origionalName,random.nextInt(3)+1);
+                String formatedName = String.format(customName, origionalName,this.attributesScaler.EntityLevel);
                 entityLiving.setCustomName(new StringTextComponent(formatedName));
             });
         }

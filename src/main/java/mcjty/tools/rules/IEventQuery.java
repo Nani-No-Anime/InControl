@@ -15,7 +15,6 @@ public interface IEventQuery<T> {
     BlockPos getPos(T o);
     /// Get the position from the event corrected to correspond to a position more likely containing a valid block
     BlockPos getValidBlockPos(T o);
-
     int getX(T o);
     int getY(T o);
     int getZ(T o);
