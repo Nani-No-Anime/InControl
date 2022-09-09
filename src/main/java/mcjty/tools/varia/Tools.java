@@ -1,20 +1,22 @@
 package mcjty.tools.varia;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class Tools {
     public static Pair<Float, ItemStack> parseStackWithFactor(String name, Logger logger) {
@@ -64,7 +66,7 @@ public class Tools {
         if (name.contains("/")) {
             String[] split = StringUtils.split(name, "/");
             ItemStack stack = ItemStack.EMPTY;
-            if(name=="..."){
+            if(name.equals("...")){
                 stack=defaultItem;
             }else{
                 stack = parseStackNoNBT(split[0], logger);

@@ -32,7 +32,7 @@ import java.util.function.Predicate;
 
 public class ForgeEventHandlers {
 
-    public static boolean debug = true;
+    public static boolean debug = false;
 
     @SubscribeEvent
     public void serverLoad(FMLServerStartingEvent event) {

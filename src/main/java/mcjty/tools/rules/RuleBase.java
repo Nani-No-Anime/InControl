@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.AttributesScalerMap;
+import mcjty.tools.nbt.JsonToNBT;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.Key;
 import mcjty.tools.varia.LookAtTools;
@@ -25,7 +26,6 @@ import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.server.MinecraftServer;
@@ -815,16 +815,25 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     private void addMobNBT(AttributeMap map) {
         String mobnbt = map.get(ACTION_MOBNBT);
         if (mobnbt != null) {
-            CompoundNBT tagCompound;
-            try {
-                tagCompound = JsonToNBT.getTagFromJson(mobnbt);
-            } catch (CommandSyntaxException e) {
-                logger.log(Level.ERROR, "Bad NBT for mob!");
-                return;
-            }
+            
+            
+
             actions.add(event -> {
+                CompoundNBT origionalTagCompound = new CompoundNBT();
+                CompoundNBT newTagCompound = new CompoundNBT();
                 LivingEntity entityLiving = event.getEntityLiving();
-                entityLiving.readAdditional(tagCompound);   // @todo 1.15 right?
+                entityLiving.writeAdditional(origionalTagCompound);
+                try {
+                    newTagCompound = JsonToNBT.getTagFromJson(mobnbt,origionalTagCompound);
+                } catch (CommandSyntaxException e) {
+                    logger.log(Level.ERROR, "Bad NBT for mob!");
+                    return;
+                }
+                /*System.out.println("---");
+                System.out.println(newTagCompound);
+                System.out.println(origionalTagCompound);
+                System.out.println("---");*/
+                entityLiving.readAdditional(newTagCompound);
             });
         }
     }
